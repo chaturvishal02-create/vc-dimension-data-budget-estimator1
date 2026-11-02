@@ -251,3 +251,4 @@ def test_pac_sensitivity_endpoint():
     # Invalid
     res_inv = client.post("/api/pac-sensitivity", json={"param_type": "invalid_param"})
     assert res_inv.status_code == 400
+
