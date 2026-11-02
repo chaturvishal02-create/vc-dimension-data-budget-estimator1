@@ -1,0 +1,13 @@
+# .vercelignore
+# Exclude local Streamlit app and development caches from Vercel Serverless Function bundling
+app.py
+smoke_test.py
+test_results.txt
+tests/
+backup/
+reports/
+models/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.log

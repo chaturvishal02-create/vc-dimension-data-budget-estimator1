@@ -1175,3 +1175,18 @@ elif nav_page == "📑 Download Reports":
             )
         except Exception as exc:
             st.error(f"Could not generate HTML: {exc}")
+
+
+# ══════════════════════════════════════════════════════════════════
+# Vercel / ASGI Entrypoint Fallback
+# If an external serverless runner or inspector inspects app.py,
+# expose the ASGI FastAPI app instance to satisfy entrypoint checks.
+# ══════════════════════════════════════════════════════════════════
+try:
+    from api.index import app as _asgi_app
+    app = _asgi_app
+    application = _asgi_app
+    handler = _asgi_app
+except Exception:
+    pass
+

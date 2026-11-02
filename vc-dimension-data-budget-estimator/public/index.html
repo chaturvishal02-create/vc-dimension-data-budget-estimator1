@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VC Dimension Data Budget Estimator | PAC Learning Theory</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent-blue: #38bdf8;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-purple: #a855f7;
+      --code-bg: #0b1120;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+    }
+
+    .banner {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-bottom: 28px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .banner-icon {
+      font-size: 22px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+
+    input, select {
+      width: 100%;
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #fff;
+      font-weight: 600;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn:hover {
+      opacity: 0.95;
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .result-box {
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      text-align: center;
+    }
+
+    .kpi-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-top: 4px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    pre {
+      background: #020617;
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      color: #38bdf8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      line-height: 1.4;
+      margin: 10px 0;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .tag-exact { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .tag-bound { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .tag-heuristic { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+    ul.assumptions {
+      list-style-type: none;
+      padding-left: 0;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    ul.assumptions li {
+      margin-bottom: 6px;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    ul.assumptions li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      background: #0b1120;
+    }
+
+    .api-link {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .api-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <div>
+          <h1>DATA BUDGET STUDIO</h1>
+          <p class="subtitle">How Much Data Does Your Model Really Need? A VC-Dimension-Guided Data Budget Estimator</p>
+        </div>
+        <div id="healthBadge" class="status-badge">
+          <span class="status-dot"></span>
+          <span>Checking API...</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="banner">
+      <div class="banner-icon">⚡</div>
+      <div>
+        <strong>Cloud Serverless Deployment (Vercel)</strong><br />
+        This responsive web application connects to the verified FastAPI backend (<code>/api</code>) to compute exact VC dimensions, distribution-free PAC bounds, and sample collection budgets.
+        For the full desktop suite with custom file drag-and-drop, multi-seed training loops, and Matplotlib/Plotly learning curves, run <code>streamlit run app.py</code> locally.
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab('tab-vc')">📐 VC Dimension</button>
+      <button class="tab-btn" onclick="openTab('tab-pac')">📊 PAC Sample Complexity</button>
+      <button class="tab-btn" onclick="openTab('tab-budget')">💰 Data Budget Estimator</button>
+      <button class="tab-btn" onclick="openTab('tab-api')">🔌 REST API & Docs</button>
+    </div>
+
+    <!-- TAB 1: VC DIMENSION -->
+    <div id="tab-vc" class="tab-panel active">
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">⚙️ Model Configuration</div>
+
+          <div class="form-group">
+            <label for="vcModel">Model Family</label>
+            <select id="vcModel" onchange="updateVCForm()">
+              <option value="Logistic Regression">Logistic Regression (Linear Halfspaces)</option>
+              <option value="Perceptron">Perceptron</option>
+              <option value="Linear Regression">Linear Regression</option>
+              <option value="Support Vector Machine">Support Vector Machine (SVM)</option>
+              <option value="Decision Tree">Decision Tree (CART)</option>
+              <option value="Random Forest">Random Forest Ensemble</option>
+              <option value="K-Nearest Neighbors">K-Nearest Neighbors (KNN)</option>
+              <option value="Naive Bayes">Naive Bayes (Gaussian)</option>
+              <option value="Polynomial Classifier">Polynomial Classifier</option>
+              <option value="Finite Class">Finite Hypothesis Class</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="vcFeatures">Input Features (n)</label>
+            <input type="number" id="vcFeatures" value="4" min="1" max="1000" />
+          </div>
+
+          <div id="vcBiasGroup" class="form-group">
+            <label for="vcBias">Include Intercept / Bias Term</label>
+            <select id="vcBias">
+              <option value="true">True (Affine d = n + 1)</option>
+              <option value="false">False (Homogeneous d = n)</option>
+            </select>
+          </div>
+
+          <div id="vcTreeGroup" class="form-group" style="display: none;">
+            <label for="vcDepth">Max Tree Depth</label>
+            <input type="number" id="vcDepth" value="3" min="1" max="20" />
+          </div>
+
+          <div id="vcSVMGroup" class="form-group" style="display: none;">
+            <label for="vcKernel">SVM Kernel</label>
+            <select id="vcKernel">
+              <option value="linear">Linear (Exact d = n + 1)</option>
+              <option value="rbf">RBF / Gaussian (Fat-Shattering Bound)</option>
+            </select>
+          </div>
+
+          <div id="vcPolyGroup" class="form-group" style="display: none;">
+            <label for="vcDegree">Polynomial Degree</label>
+            <input type="number" id="vcDegree" value="2" min="1" max="6" />
+          </div>
+
+          <div id="vcFiniteGroup" class="form-group" style="display: none;">
+            <label for="vcCardinality">Hypothesis Space Size |H|</label>
+            <input type="number" id="vcCardinality" value="1024" min="2" />
+          </div>
+
+          <button class="btn" onclick="calcVCDimension()">Calculate VC Dimension</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📐 Theoretical Capacity Result</div>
+          <div id="vcPlaceholder" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 40px 0;">
+            Select a model and click "Calculate VC Dimension" to view mathematical derivation and proof assumptions.
+          </div>
+
+          <div id="vcResultBox" class="result-box">
+            <div id="vcTag" class="tag tag-exact">Exact Theorem</div>
+            <div class="kpi-row">
+              <div class="kpi">
+                <div class="kpi-label">VC Dimension (d)</div>
+                <div id="vcDimVal" class="kpi-num">5</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Model Family</div>
+                <div id="vcFamilyVal" style="font-size: 13px; font-weight: 600; margin-top: 8px;">Linear</div>
+              </div>
+            </div>
+
+            <label>Formula & Substituted Derivation</label>
+            <pre id="vcSubstituted"></pre>
+
+            <label>Theoretical Explanation</label>
+            <p id="vcExplanation" style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px;"></p>
+
+            <label>Assumptions Checklist</label>
+            <ul id="vcAssumptions" class="assumptions"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PAC SAMPLE COMPLEXITY -->
+    <div id="tab-pac" class="tab-panel">
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">🎯 PAC Learning Parameters</div>
+
+          <div class="form-group">
+            <label for="pacVC">VC Dimension (d)</label>
+            <input type="number" id="pacVC" value="5" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label for="pacEps">Target Error Tolerance ε (e.g., 0.05 = 95% accuracy)</label>
+            <input type="number" id="pacEps" value="0.05" step="0.01" min="0.001" max="0.5" />
+          </div>
+
+          <div class="form-group">
+            <label for="pacDelta">Failure Risk δ (e.g., 0.05 = 95% confidence)</label>
+            <input type="number" id="pacDelta" value="0.05" step="0.01" min="0.001" max="0.5" />
+          </div>
+
+          <div class="form-group">
+            <label for="pacSetting">Learning Setting</label>
+            <select id="pacSetting">
+              <option value="realizable">Realizable PAC Bound (Zero Noise, Blumer 1989)</option>
+              <option value="agnostic">Agnostic PAC Bound (General / Noisy, Anthony & Bartlett)</option>
+              <option value="regression">Real-Valued Regression (Pollard Bound)</option>
+              <option value="all">Compare All Formulations</option>
+            </select>
+          </div>
+
+          <button class="btn" onclick="calcPACBound()">Compute Sample Requirement</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 Sample Complexity Output</div>
+          <div id="pacPlaceholder" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 40px 0;">
+            Configure epsilon, delta, and VC dimension to evaluate sample requirements.
+          </div>
+
+          <div id="pacResultBox" class="result-box">
+            <div class="kpi-row">
+              <div class="kpi">
+                <div class="kpi-label">Required Samples (m)</div>
+                <div id="pacMVal" class="kpi-num">0</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Confidence (1 - δ)</div>
+                <div id="pacConfVal" class="kpi-num" style="color: var(--accent-green);">95.0%</div>
+              </div>
+            </div>
+
+            <label>Substituted Formula</label>
+            <pre id="pacSubstituted"></pre>
+
+            <label>Statistical Guarantee</label>
+            <p id="pacExplanation" style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px;"></p>
+
+            <label>Citation & Reference</label>
+            <p id="pacRef" style="font-size: 12px; color: var(--text-muted); font-style: italic;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DATA BUDGET -->
+    <div id="tab-budget" class="tab-panel">
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">💰 Budget & Collection Parameters</div>
+
+          <div class="form-group">
+            <label for="budModel">Model Family</label>
+            <select id="budModel">
+              <option value="Logistic Regression">Logistic Regression (d = n + 1)</option>
+              <option value="Perceptron">Perceptron (d = n + 1)</option>
+              <option value="Decision Tree">Decision Tree</option>
+              <option value="Support Vector Machine">Support Vector Machine</option>
+              <option value="Random Forest">Random Forest</option>
+              <option value="Linear Regression">Linear Regression</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="budFeatures">Feature Count (n)</label>
+            <input type="number" id="budFeatures" value="4" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label for="budCurrentM">Current Dataset Size (samples on hand)</label>
+            <input type="number" id="budCurrentM" value="150" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label for="budEps">Desired Error Tolerance ε</label>
+            <input type="number" id="budEps" value="0.05" step="0.01" min="0.01" max="0.5" />
+          </div>
+
+          <div class="form-group">
+            <label for="budCost">Collection Cost per Sample ($)</label>
+            <input type="number" id="budCost" value="1.50" step="0.25" min="0" />
+          </div>
+
+          <button class="btn" onclick="calcDataBudget()">Calculate Full Data Budget</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📋 Recommended Data Budget</div>
+          <div id="budPlaceholder" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 40px 0;">
+            Provide your dataset size and cost per sample to estimate acquisition requirements.
+          </div>
+
+          <div id="budResultBox" class="result-box">
+            <div class="kpi-row">
+              <div class="kpi">
+                <div class="kpi-label">Current Samples</div>
+                <div id="budCurrVal" class="kpi-num">150</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">PAC Bound (m)</div>
+                <div id="budTheoryVal" class="kpi-num">6,844</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Additional Needed</div>
+                <div id="budAddVal" class="kpi-num" style="color: var(--accent-amber);">6,694</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Financial Budget</div>
+                <div id="budCostVal" class="kpi-num" style="color: var(--accent-green);">$10,041</div>
+              </div>
+            </div>
+
+            <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 12px; margin-top: 14px; font-size: 13px;">
+              <strong>💡 Theory vs Practice Note:</strong>
+              The distribution-free PAC bound guarantees performance under worst-case adversarial data distributions.
+              In empirical machine learning on real-world benign distributions, models frequently achieve target accuracy with 10× to 100× fewer samples than this theoretical ceiling.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: API & DOCUMENTATION -->
+    <div id="tab-api" class="tab-panel">
+      <div class="card">
+        <div class="card-title">🔌 FastAPI Serverless Endpoints</div>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+          This deployment exports a production ASGI FastAPI application with full interactive OpenAPI / Swagger documentation.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag-exact">GET</span></td>
+              <td><code>/api/health</code></td>
+              <td>Health check, uptime, version, and model capabilities</td>
+              <td><a href="/api/health" target="_blank" class="api-link">View JSON ↗</a></td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-exact">GET</span></td>
+              <td><code>/api/models</code></td>
+              <td>List all supported classification and regression model families</td>
+              <td><a href="/api/models" target="_blank" class="api-link">View JSON ↗</a></td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-bound">POST</span></td>
+              <td><code>/api/vc-dimension</code></td>
+              <td>Calculate exact or bounded VC dimension for a selected model</td>
+              <td><a href="/docs#/Theory/calculate_vc_dimension_api_vc_dimension_post" target="_blank" class="api-link">Swagger Docs ↗</a></td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-bound">POST</span></td>
+              <td><code>/api/pac-bounds</code></td>
+              <td>Calculate Realizable, Agnostic, and Regression PAC bounds</td>
+              <td><a href="/docs#/Theory/calculate_pac_sample_complexity_api_pac_bounds_post" target="_blank" class="api-link">Swagger Docs ↗</a></td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-bound">POST</span></td>
+              <td><code>/api/data-budget</code></td>
+              <td>Compute comparative data budget with power-law observations</td>
+              <td><a href="/docs#/Budget/estimate_budget_api_data_budget_post" target="_blank" class="api-link">Swagger Docs ↗</a></td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-bound">POST</span></td>
+              <td><code>/api/estimate-budget-full</code></td>
+              <td>One-stop pipeline: model parameters to financial data budget</td>
+              <td><a href="/docs#/Full%20Pipeline/estimate_budget_full_api_estimate_budget_full_post" target="_blank" class="api-link">Swagger Docs ↗</a></td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-heuristic">DOCS</span></td>
+              <td><code>/docs</code></td>
+              <td>Interactive Swagger UI with in-browser request tester</td>
+              <td><a href="/docs" target="_blank" class="api-link">Open Swagger UI ↗</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab Switching
+    function openTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Health check on load
+    async function checkHealth() {
+      const badge = document.getElementById('healthBadge');
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          const data = await res.json();
+          badge.innerHTML = `<span class="status-dot"></span><span>API Online (v${data.version})</span>`;
+        } else {
+          badge.innerHTML = `<span style="color:#ef4444;">● API Error (${res.status})</span>`;
+        }
+      } catch (err) {
+        badge.innerHTML = `<span style="color:#ef4444;">● Offline</span>`;
+      }
+    }
+    checkHealth();
+
+    // Model dropdown dynamic controls
+    function updateVCForm() {
+      const m = document.getElementById('vcModel').value;
+      document.getElementById('vcBiasGroup').style.display = (m === 'Logistic Regression' || m === 'Perceptron' || m === 'Linear Regression') ? 'block' : 'none';
+      document.getElementById('vcTreeGroup').style.display = (m === 'Decision Tree' || m === 'Random Forest') ? 'block' : 'none';
+      document.getElementById('vcSVMGroup').style.display = (m === 'Support Vector Machine') ? 'block' : 'none';
+      document.getElementById('vcPolyGroup').style.display = (m === 'Polynomial Classifier') ? 'block' : 'none';
+      document.getElementById('vcFiniteGroup').style.display = (m === 'Finite Class') ? 'block' : 'none';
+    }
+
+    // Calculate VC Dimension via API
+    async function calcVCDimension() {
+      const m = document.getElementById('vcModel').value;
+      const n = parseInt(document.getElementById('vcFeatures').value, 10);
+      const bias = document.getElementById('vcBias').value === 'true';
+      const depth = parseInt(document.getElementById('vcDepth').value, 10);
+      const kernel = document.getElementById('vcKernel').value;
+      const degree = parseInt(document.getElementById('vcDegree').value, 10);
+      const card = parseInt(document.getElementById('vcCardinality').value, 10);
+
+      const payload = {
+        model_name: m,
+        n_features: n,
+        bias: bias,
+        max_depth: depth,
+        kernel: kernel,
+        degree: degree,
+        cardinality: card
+      };
+
+      try {
+        const res = await fetch('/api/vc-dimension', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error: ' + (err.detail || res.statusText));
+          return;
+        }
+        const data = await res.json();
+        document.getElementById('vcPlaceholder').style.display = 'none';
+        document.getElementById('vcResultBox').style.display = 'block';
+
+        document.getElementById('vcDimVal').innerText = data.vc_dim.toLocaleString();
+        document.getElementById('vcFamilyVal').innerText = data.family;
+        document.getElementById('vcSubstituted').innerText = data.substituted;
+        document.getElementById('vcExplanation').innerText = data.explanation;
+
+        const tag = document.getElementById('vcTag');
+        tag.innerText = data.type.toUpperCase() + ": " + data.confidence;
+        tag.className = 'tag ' + (data.type === 'exact' ? 'tag-exact' : (data.type === 'bound' ? 'tag-bound' : 'tag-heuristic'));
+
+        const ul = document.getElementById('vcAssumptions');
+        ul.innerHTML = '';
+        (data.assumptions || []).forEach(a => {
+          const li = document.createElement('li');
+          li.innerText = a;
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        alert('Network request failed: ' + err.message);
+      }
+    }
+
+    // Calculate PAC Sample Complexity via API
+    async function calcPACBound() {
+      const d = parseInt(document.getElementById('pacVC').value, 10);
+      const eps = parseFloat(document.getElementById('pacEps').value);
+      const delta = parseFloat(document.getElementById('pacDelta').value);
+      const setting = document.getElementById('pacSetting').value;
+
+      const payload = {
+        vc_dimension: d,
+        epsilon: eps,
+        delta: delta,
+        setting: setting
+      };
+
+      try {
+        const res = await fetch('/api/pac-bounds', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error: ' + (err.detail || res.statusText));
+          return;
+        }
+        const data = await res.json();
+        document.getElementById('pacPlaceholder').style.display = 'none';
+        document.getElementById('pacResultBox').style.display = 'block';
+
+        if (setting === 'all') {
+          const mReal = data.bounds.realizable.m;
+          const mAgn = data.bounds.agnostic.m;
+          const mReg = data.bounds.regression.m;
+          document.getElementById('pacMVal').innerText = mReal.toLocaleString() + ' (Realizable)';
+          document.getElementById('pacSubstituted').innerText =
+            `• Realizable: m >= ${mReal.toLocaleString()} samples\n` +
+            `• Agnostic:   m >= ${mAgn.toLocaleString()} samples\n` +
+            `• Regression: m >= ${mReg.toLocaleString()} samples`;
+          document.getElementById('pacExplanation').innerText = 'Agnostic bound is larger because it does not assume zero-noise realizability.';
+          document.getElementById('pacRef').innerText = 'Blumer et al. (1989) / Anthony & Bartlett (1999) / Pollard (1984)';
+        } else {
+          const r = data.result;
+          document.getElementById('pacMVal').innerText = r.m.toLocaleString();
+          document.getElementById('pacConfVal').innerText = ((1 - delta) * 100).toFixed(1) + '%';
+          document.getElementById('pacSubstituted').innerText = r.substituted;
+          document.getElementById('pacExplanation').innerText = r.explanation;
+          document.getElementById('pacRef').innerText = r.reference || '';
+        }
+      } catch (err) {
+        alert('Network request failed: ' + err.message);
+      }
+    }
+
+    // Calculate Data Budget via API
+    async function calcDataBudget() {
+      const model = document.getElementById('budModel').value;
+      const n = parseInt(document.getElementById('budFeatures').value, 10);
+      const curr = parseInt(document.getElementById('budCurrentM').value, 10);
+      const eps = parseFloat(document.getElementById('budEps').value);
+      const cost = parseFloat(document.getElementById('budCost').value);
+
+      const payload = {
+        model_name: model,
+        n_features: n,
+        current_dataset_size: curr,
+        epsilon: eps,
+        delta: 0.05,
+        cost_per_sample: cost
+      };
+
+      try {
+        const res = await fetch('/api/estimate-budget-full', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error: ' + (err.detail || res.statusText));
+          return;
+        }
+        const data = await res.json();
+        const s = data.budget_summary;
+
+        document.getElementById('budPlaceholder').style.display = 'none';
+        document.getElementById('budResultBox').style.display = 'block';
+
+        document.getElementById('budCurrVal').innerText = s.current_dataset_size.toLocaleString();
+        document.getElementById('budTheoryVal').innerText = s.theoretical_m.toLocaleString();
+        document.getElementById('budAddVal').innerText = s.additional_samples_needed.toLocaleString();
+        document.getElementById('budCostVal').innerText = '$' + s.additional_acquisition_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } catch (err) {
+        alert('Network request failed: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
