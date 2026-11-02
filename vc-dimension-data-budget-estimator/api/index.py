@@ -16,7 +16,6 @@ if ROOT_DIR not in sys.path:
 from typing import Dict, Any, List, Optional, Union
 import math
 import numpy as np
-import pandas as pd
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -41,7 +40,7 @@ def to_serializable(val: Any) -> Any:
         return {k: to_serializable(v) for k, v in val.items()}
     elif isinstance(val, (list, tuple)):
         return [to_serializable(v) for v in val]
-    elif isinstance(val, (np.ndarray, pd.Series)):
+    elif isinstance(val, np.ndarray) or hasattr(val, "tolist"):
         return val.tolist()
     elif isinstance(val, (np.integer,)):
         return int(val)
