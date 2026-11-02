@@ -1,0 +1,14 @@
+# .gitignore
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.csv
+*.pkl
+*.joblib
+models/*.pkl
+reports/*.pdf
+reports/*.png
+.streamlit/

@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.15.0, pytest-9.1.1, pluggy-1.7.0
+rootdir: C:\Users\VISHAL\PYTHON\Machine learning micro project\vc-dimension-data-budget-estimator
+plugins: anyio-4.15.1
+collected 65 items
+
+tests\test_enhancements.py ................                              [ 24%]
+tests\test_evaluation.py ...                                             [ 29%]
+tests\test_new_features.py ........                                      [ 41%]
+tests\test_pac_bound.py ................                                 [ 66%]
+tests\test_report_generator.py .....                                     [ 73%]
+tests\test_vc_dimension.py .................                             [100%]
+
+============================= 65 passed in 4.90s ==============================
